@@ -6,8 +6,8 @@ using namespace std;
 
 void Cuatroenlinea::initWindow()
 {
-    this->videoMode.height = 600;
-    this->videoMode.width = 800;
+    this->videoMode.height =768;
+    this->videoMode.width = 960;
 
     this->window = new sf::RenderWindow(
         this->videoMode, 

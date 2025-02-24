@@ -1,27 +1,32 @@
+
 #include <SFML/Graphics.hpp>
+#include <SFML/System.hpp>
+#include <SFML/Audio.hpp>
+#include <SFML/Network.hpp>
+#include <SFML/Window.hpp>
+
+
 #include <iostream>
 #include <optional>
+#include "Cuatroenlinea.h"
+
 
 using namespace std;
+using namespace sf;
+
+    
 
 int main()
 {
-    cout << "Hello, World!" << endl;
-    sf::RenderWindow window(sf::VideoMode({200, 200}), "SFML works!");
-    sf::CircleShape shape(100.f);
-    shape.setFillColor(sf::Color::Green);
-
-    while (window.isOpen())
+    //Cuatroenlinea cuatroenlinea;
+    cout << "Bienvenido a Cuatro en Linea" << endl;
+    
+    while (cuatroenlinea.getWindowIsOpen())
     {
-        while (const std::optional event = window.pollEvent())
-        {
-            if (event->is<sf::Event::Closed>())
-                window.close();
-        }
-
-        window.clear();
-        window.draw(shape);
-        window.display();
+        //Update
+        cuatroenlinea.actualizar();
+        //Render
+        cuatroenlinea.render();
         
     }
 }

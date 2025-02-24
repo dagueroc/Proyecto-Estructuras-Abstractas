@@ -29,4 +29,6 @@ int main()
         cuatroenlinea.render();
         
     }
+
+    return 0;
 }

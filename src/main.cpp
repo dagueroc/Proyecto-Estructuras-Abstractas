@@ -7,7 +7,7 @@
 
 
 #include <iostream>
-#include <optional>
+
 #include "Cuatroenlinea.h"
 
 
@@ -18,7 +18,7 @@ using namespace sf;
 
 int main()
 {
-    //Cuatroenlinea cuatroenlinea;
+    Cuatroenlinea cuatroenlinea;
     cout << "Bienvenido a Cuatro en Linea" << endl;
     
     while (cuatroenlinea.getWindowIsOpen())

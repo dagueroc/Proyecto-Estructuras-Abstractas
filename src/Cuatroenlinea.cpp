@@ -12,13 +12,13 @@ void Cuatroenlinea::initWindow()
     this->window = new sf::RenderWindow(
         this->videoMode, 
         "4 en linea", 
-        sf::WindowStyle::Titlebar | sf::WindowStyle::Close
+        sf::Style::Titlebar | sf::Style::Close
     );
 }
 
 void Cuatroenlinea::initVariables()
 {
-    this->window = nullptr;
+    //this->window = nullptr;
 }
 
 // Accesos

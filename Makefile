@@ -16,12 +16,16 @@ OBJ_FILES = $(patsubst $(SRC_DIR)/%.cpp,$(BUILD_DIR)/%.o,$(SRC_FILES))
 
 .PHONY: all clean run install
 
-all: install $(BUILD_DIR)/main run
+all: install $(BUILD_DIR) $(BUILD_DIR)/main run
 
 # Instalar SFML 
 install:
 	@echo "Instalando SFML..."
 	sudo apt-get install -y libsfml-dev
+
+# Crear carpeta build si no existe
+$(BUILD_DIR):
+	@mkdir -p $(BUILD_DIR)
 
 # Compilar y enlazar el ejecutable
 $(BUILD_DIR)/main: $(OBJ_FILES)
@@ -29,7 +33,7 @@ $(BUILD_DIR)/main: $(OBJ_FILES)
 	$(CXX) $(OBJ_FILES) -o $(BUILD_DIR)/main$(EXE) $(LDFLAGS)
 
 # Compilar los archivos fuente
-$(BUILD_DIR)/%.o: $(SRC_DIR)/%.cpp
+$(BUILD_DIR)/%.o: $(SRC_DIR)/%.cpp | $(BUILD_DIR)
 	@echo "Compilando $<..."
 	$(CXX) $(CXXFLAGS) -c $< -o $@
 

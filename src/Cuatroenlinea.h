@@ -10,8 +10,6 @@
 
 using namespace std;
 using namespace sf;
-//Funcionalidades del juego
-
 
 class Cuatroenlinea {
 
@@ -21,26 +19,36 @@ class Cuatroenlinea {
         virtual ~Cuatroenlinea();
 
         // Accesos
-        
         const bool getWindowIsOpen() const;
-
 
         // Metodos
         void actualizarEventos();
         void actualizar();
         void render();
+        bool colocarFicha(int columna);
+        bool verificarVictoria(char jugador);
+        void cambiarTurno();
+        void reiniciarJuego();
+        void mostrarTurno();
 
     private:
-
-        //Variables
+        // Variables
         RenderWindow* window;
         Event ev;
-
         VideoMode videoMode;
         void initWindow();
         void initVariables();
 
+        // Tablero y lógica del juego
+        static const int FILAS = 6;
+        static const int COLUMNAS = 7;
+        char tablero[FILAS][COLUMNAS];
+        char jugadorActual;
 
+        // Fuente y texto para mostrar el turno
+        Font font;
+        Text turnoTexto;
+        void initTexto();
 };
 
 #endif // CUATROENLINEA_H

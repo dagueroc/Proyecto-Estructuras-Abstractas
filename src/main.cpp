@@ -1,27 +1,25 @@
 #include <SFML/Graphics.hpp>
 #include <iostream>
-#include <optional>
 
-using namespace std;
+int main() {
+    // Crear ventana principal
+    sf::RenderWindow window(sf::VideoMode(800, 600), "SFML Window");
 
-int main()
-{
-    cout << "Hello, World!" << endl;
-    sf::RenderWindow window(sf::VideoMode({200, 200}), "SFML works!");
-    sf::CircleShape shape(100.f);
-    shape.setFillColor(sf::Color::Green);
-
-    while (window.isOpen())
-    {
-        while (const std::optional event = window.pollEvent())
-        {
-            if (event->is<sf::Event::Closed>())
+    // Bucle principal de la ventana
+    while (window.isOpen()) {
+        sf::Event event;
+        while (window.pollEvent(event)) { // Cambiar para usar la firma correcta
+            if (event.type == sf::Event::Closed) { // Verificar el tipo de evento
                 window.close();
+            }
         }
 
-        window.clear();
-        window.draw(shape);
+        // Limpiar la ventana con un color negro
+        window.clear(sf::Color::Black);
+
+        // Mostrar los cambios en la ventana
         window.display();
-        
     }
+
+    return 0;
 }

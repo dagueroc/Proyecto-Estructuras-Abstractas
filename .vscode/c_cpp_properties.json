@@ -3,7 +3,7 @@
         {
             "name": "Win32",
             "includePath": [
-                "${workspaceFolder}/src/SFML-3.0.0/include"
+                "${workspaceFolder}/src/SFML-2.6.2/include"
             ],
             "defines": [
                 "_DEBUG",

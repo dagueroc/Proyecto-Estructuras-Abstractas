@@ -16,10 +16,9 @@ OBJ_FILES = $(patsubst $(SRC_DIR)/%.cpp,$(BUILD_DIR)/%.o,$(SRC_FILES))
 
 .PHONY: all clean run install
 
-# El objetivo principal (default) compila y ejecuta el programa
 all: install $(BUILD_DIR)/main run
 
-# Instalar SFML (solo para Ubuntu)
+# Instalar SFML 
 install:
 	@echo "Instalando SFML..."
 	sudo apt-get install -y libsfml-dev

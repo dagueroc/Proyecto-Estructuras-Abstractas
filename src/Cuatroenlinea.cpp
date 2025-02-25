@@ -96,7 +96,7 @@ void Cuatroenlinea::actualizar()
 
 void Cuatroenlinea::render()
 {
-    this->window->clear(sf::Color::Blue);
+    this->window->clear(sf::Color(132,182,244));
 
     this->window->draw(this->turnoTexto);
 
@@ -104,15 +104,15 @@ void Cuatroenlinea::render()
         for (int j = 0; j < COLUMNAS; j++) {
             sf::CircleShape cell(40.0f); 
             cell.setPosition(10 + j * (100.0f), (i + 1) * (100.0f));
-            cell.setOutlineThickness(2.0f);
-            cell.setOutlineColor(sf::Color::Black);
+            cell.setOutlineThickness(1.75f);
+            cell.setOutlineColor(sf::Color(96, 109, 166));
             cell.setFillColor(sf::Color::White);
     
             this->window->draw(cell);
     
             if (tablero[i][j] != ' ') {
                 sf::CircleShape ficha(40.0f);
-                ficha.setFillColor(tablero[i][j] == 'O' ? sf::Color::Red : sf::Color::Yellow);
+                ficha.setFillColor(tablero[i][j] == 'O' ? sf::Color(255,105,97) : sf::Color(255,253,150));
                 ficha.setPosition(10 + j * (100.0f), (i + 1) * (100.0f));
                 this->window->draw(ficha);
             }

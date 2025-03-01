@@ -30,6 +30,7 @@ class Cuatroenlinea {
         void cambiarTurno();
         void reiniciarJuego();
         void mostrarTurno();
+        void mostrarMenu();
 
     private:
         // Variables
@@ -44,6 +45,8 @@ class Cuatroenlinea {
         static const int COLUMNAS = 7;
         char tablero[FILAS][COLUMNAS];
         char jugadorActual;
+        bool contraIA;
+        string dificultadIA;
 
         // Fuente y texto para mostrar el turno
         Font font;

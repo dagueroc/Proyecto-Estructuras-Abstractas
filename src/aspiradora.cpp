@@ -61,6 +61,9 @@ int main(){
 			    break;
 			case '2':
                 jugandoContraAspi = true; 
+				turno = 'O';
+                JugarContraAspi(); 
+                LimpiarTablero();
                 break;
             case '3': 
 				 return 0;

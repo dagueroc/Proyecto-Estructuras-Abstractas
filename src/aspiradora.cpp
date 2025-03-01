@@ -8,6 +8,7 @@ void LimpiarTablero();
 void LimpiarPantalla();
 void MostrarTablero();
 void UbicarFicha();
+void UbicarFichaAspi();
 bool RevisarHorizontal(int, int, char);
 bool RevisarVertical(int, int, char);
 bool RevisarDiagonal(int, int, char);
@@ -99,8 +100,23 @@ void JugarContraAspi(){
             UbicarFicha();
         }
     } else {
+		UbicarFichaAspi();
     }
     JugarContraAspi();
+}
+
+void UbicarFichaAspi(){
+    do {
+        colD = rand() % 7 + 1;
+    } while(tablero[0][colD] != ' ');
+    for(int i = 5; i >= 0; i--){
+        if(tablero[i][colD] == ' '){
+            tablero[i][colD] = turno;
+            indD = i;
+            break;
+        }
+    }
+    cout << "\n\tAspi jugó en la columna: " << colD << endl;
 }
 
 

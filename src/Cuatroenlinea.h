@@ -2,12 +2,17 @@
 #define CUATROENLINEA_H
 
 #include <SFML/Graphics.hpp>
-#include <iostream>
+#include <SFML/Graphics.hpp>
+#include <SFML/System.hpp>
+#include <SFML/Audio.hpp>
+#include <SFML/Network.hpp>
+#include <SFML/Window.hpp>
 
 using namespace std;
 using namespace sf;
 
 class Cuatroenlinea {
+
     public:
         // Constructores y destructores
         Cuatroenlinea();
@@ -16,7 +21,7 @@ class Cuatroenlinea {
         // Accesos
         const bool getWindowIsOpen() const;
 
-        // Métodos principales
+        // Metodos
         void actualizarEventos();
         void actualizar();
         void render();
@@ -25,31 +30,28 @@ class Cuatroenlinea {
         void cambiarTurno();
         void reiniciarJuego();
         void mostrarTurno();
-
-        // Menú de selección de modo de juego
-        int mostrarMenu(sf::RenderWindow& window);
+        void mostrarMenu();
 
     private:
-        // Ventana principal del juego
+        // Variables
         RenderWindow* window;
         Event ev;
         VideoMode videoMode;
-
-        // Métodos de inicialización
         void initWindow();
         void initVariables();
-        void initTexto();
 
-        // Variables del tablero y lógica del juego
+        // Tablero y lógica del juego
         static const int FILAS = 6;
         static const int COLUMNAS = 7;
         char tablero[FILAS][COLUMNAS];
         char jugadorActual;
-        int modoJuego; // 0: Jugador vs Jugador, 1: Jugador vs AI
+        bool contraIA;
+        string dificultadIA;
 
-        // Fuente y textos para mostrar la interfaz
+        // Fuente y texto para mostrar el turno
         Font font;
         Text turnoTexto;
+        void initTexto();
 };
 
 #endif // CUATROENLINEA_H

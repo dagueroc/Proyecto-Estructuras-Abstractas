@@ -4,11 +4,17 @@
 
 using namespace std;
 
+// Métodos privados
 void Cuatroenlinea::initWindow()
 {
     this->videoMode.height = 700;
     this->videoMode.width = 700;
-    this->window = new sf::RenderWindow(this->videoMode, "4 en linea", sf::Style::Titlebar | sf::Style::Close);
+
+    this->window = new sf::RenderWindow(
+        this->videoMode, 
+        "4 en linea", 
+        sf::Style::Titlebar | sf::Style::Close
+    );
 }
 
 void Cuatroenlinea::initVariables()
@@ -19,7 +25,6 @@ void Cuatroenlinea::initVariables()
         }
     }
     this->jugadorActual = 'O';
-    this->modoJuego = 0; // Valor predeterminado
 }
 
 void Cuatroenlinea::initTexto()
@@ -34,14 +39,17 @@ void Cuatroenlinea::initTexto()
     this->mostrarTurno();
 }
 
+// Accesos
+const bool Cuatroenlinea::getWindowIsOpen() const
+{
+    return this->window->isOpen();
+}
+
+// Constructores y destructores
 Cuatroenlinea::Cuatroenlinea()
 {
-    sf::RenderWindow menuWindow(sf::VideoMode(700, 700), "Menu 4 en Linea");
-    this->modoJuego = this->mostrarMenu(menuWindow);
-    
-    if (this->modoJuego == -1) exit(0); // Si el usuario cierra el menú, termina el programa
-
     this->initWindow();
+    this->mostrarMenu();  // Se elige el modo antes de iniciar el juego
     this->initVariables();
     this->initTexto();
 }
@@ -51,23 +59,33 @@ Cuatroenlinea::~Cuatroenlinea()
     delete this->window;
 }
 
-const bool Cuatroenlinea::getWindowIsOpen() const
-{
-    return this->window->isOpen();
-}
-
-void Cuatroenlinea::mostrarTurno()
-{
-    this->turnoTexto.setString("Turno del jugador: " + string(1, this->jugadorActual));
-}
-
+// Métodos
 void Cuatroenlinea::actualizarEventos()
 {
     while (this->window->pollEvent(this->ev))
     {
-        if (this->ev.type == sf::Event::Closed)
+        switch (this->ev.type)
         {
+        case sf::Event::Closed:
             this->window->close();
+            break;
+        case sf::Event::MouseButtonPressed:
+            if (this->ev.mouseButton.button == sf::Mouse::Left)
+            {
+                int columna = this->ev.mouseButton.x / 100;
+                if (columna >= 0 && columna < COLUMNAS)
+                {
+                    if (this->colocarFicha(columna)) {
+                        if (this->verificarVictoria(this->jugadorActual)) {
+                            cout << "¡El jugador " << this->jugadorActual << " ganó!" << endl;
+                            this->reiniciarJuego();
+                        } else {
+                            this->cambiarTurno();
+                        }
+                    }
+                }
+            }
+            break;
         }
     }
 }
@@ -80,70 +98,230 @@ void Cuatroenlinea::actualizar()
 void Cuatroenlinea::render()
 {
     this->window->clear(sf::Color(132,182,244));
+
     this->window->draw(this->turnoTexto);
+
+    for (int i = 0; i < FILAS; i++) {
+        for (int j = 0; j < COLUMNAS; j++) {
+            sf::CircleShape cell(40.0f); 
+            cell.setPosition(10 + j * (100.0f), (i + 1) * (100.0f));
+            cell.setOutlineThickness(1.75f);
+            cell.setOutlineColor(sf::Color(96, 109, 166));
+            cell.setFillColor(sf::Color::White);
+    
+            this->window->draw(cell);
+    
+            if (tablero[i][j] != ' ') {
+                sf::CircleShape ficha(40.0f);
+                ficha.setFillColor(tablero[i][j] == 'O' ? sf::Color(255,105,97) : sf::Color(255,253,150));
+                ficha.setPosition(10 + j * (100.0f), (i + 1) * (100.0f));
+                this->window->draw(ficha);
+            }
+        }
+    
+    }
     this->window->display();
 }
 
-int Cuatroenlinea::mostrarMenu(sf::RenderWindow& window)
+bool Cuatroenlinea::colocarFicha(int columna)
 {
-    if (!this->font.loadFromFile("resources/font.ttf")) {
-        cerr << "Error al cargar la fuente" << endl;
-        return -1;
+    for (int i = FILAS - 1; i >= 0; i--) {
+        if (this->tablero[i][columna] == ' ') {
+            this->tablero[i][columna] = this->jugadorActual;
+            return true;
+        }
     }
+    return false;
+}
+
+void Cuatroenlinea::cambiarTurno()
+{
+    this->jugadorActual = (this->jugadorActual == 'O') ? 'X' : 'O';
+    this->mostrarTurno();
+}
+
+void Cuatroenlinea::mostrarTurno()
+{
+    this->turnoTexto.setString("Turno del jugador: " + string(1, this->jugadorActual));
+}
+
+void Cuatroenlinea::reiniciarJuego()
+{
+    this->initVariables();
+    this->mostrarTurno();
+}
+
+bool Cuatroenlinea::verificarVictoria(char jugador)
+
+{
     
-    // Crear los textos
-    Text titulo, opcion1, opcion2;
+    return false;
+}
 
-    titulo.setFont(this->font);
-    titulo.setString("4 en Linea");
-    titulo.setCharacterSize(28); // Tamaño más pequeño
-    titulo.setFillColor(Color::Black);
 
-    opcion1.setFont(this->font);
-    opcion1.setString("1. Jugar contra otra persona");
-    opcion1.setCharacterSize(18); // Tamaño más pequeño
-    opcion1.setFillColor(Color::Black);
+void Cuatroenlinea::mostrarMenu()
+{
+    sf::Font menuFont;
+    if (!menuFont.loadFromFile("resources/font.ttf"))
+    {
+        cerr << "Error al cargar la fuente" << endl;
+        return;
+    }
 
-    opcion2.setFont(this->font);
-    opcion2.setString("2. Jugar contra la AI");
-    opcion2.setCharacterSize(18); // Tamaño más pequeño
-    opcion2.setFillColor(Color::Black);
+    sf::Text titulo("4 en Linea", menuFont, 20);
+    titulo.setFillColor(sf::Color::Black);
+    titulo.setPosition(250, 100);
 
-    // Obtener el tamaño del texto para centrarlo correctamente
-    FloatRect boundsTitulo = titulo.getLocalBounds();
-    FloatRect boundsOpcion1 = opcion1.getLocalBounds();
-    FloatRect boundsOpcion2 = opcion2.getLocalBounds();
+    sf::RectangleShape caja1(sf::Vector2f(400, 50));
+    caja1.setFillColor(sf::Color(105, 97, 255));
+    caja1.setOutlineColor(sf::Color::Black);
+    caja1.setOutlineThickness(2);
+    caja1.setPosition(150, 240);
 
-    float centerX = window.getSize().x / 2.0f;
+    sf::Text opcion1("Jugar contra otro jugador", menuFont, 15);
+    opcion1.setFillColor(sf::Color(242, 240, 235));
+    opcion1.setPosition(162, 255);
 
-    titulo.setPosition(centerX - boundsTitulo.width / 2.0f, 50);  // Más arriba
-    opcion1.setPosition(centerX - boundsOpcion1.width / 2.0f, 130); // Más abajo
-    opcion2.setPosition(centerX - boundsOpcion2.width / 2.0f, 180); // Más abajo
+    sf::RectangleShape caja2(sf::Vector2f(400, 50));
+    caja2.setFillColor(sf::Color(105, 97, 255));
+    caja2.setOutlineColor(sf::Color::Black);
+    caja2.setOutlineThickness(2);
+    caja2.setPosition(150, 340);
 
-    while (window.isOpen()) {
-        sf::Event evento;
-        while (window.pollEvent(evento)) {
-            if (evento.type == sf::Event::Closed) {
-                window.close();
-                return -1;
-            }
-            if (evento.type == sf::Event::KeyPressed) {
-                if (evento.key.code == sf::Keyboard::Num1) {
-                    window.close();
-                    return 0;
-                }
-                if (evento.key.code == sf::Keyboard::Num2) {
-                    window.close();
-                    return 1;
+    sf::Text opcion2("Jugar contra la IA", menuFont, 15);
+    opcion2.setFillColor(sf::Color(242, 240, 235));
+    opcion2.setPosition(210, 355);
+
+    while (this->window->isOpen())
+    {
+        sf::Event event;
+        while (this->window->pollEvent(event))
+        {
+            if (event.type == sf::Event::Closed)
+                this->window->close();
+
+            if (event.type == sf::Event::MouseButtonPressed)
+            {
+                if (event.mouseButton.button == sf::Mouse::Left)
+                {
+                    sf::Vector2i mousePos = sf::Mouse::getPosition(*this->window);
+
+                    if (caja1.getGlobalBounds().contains(static_cast<sf::Vector2f>(mousePos)))
+                    {
+                        this->contraIA = false;
+                        return;
+                    }
+                    else if (caja2.getGlobalBounds().contains(static_cast<sf::Vector2f>(mousePos)))
+                    {
+                        this->contraIA = true;
+
+                        sf::RectangleShape cajaFacil(sf::Vector2f(400, 50));
+                        cajaFacil.setFillColor(sf::Color::Transparent);
+                        cajaFacil.setOutlineColor(sf::Color::Black);
+                        cajaFacil.setOutlineThickness(2);
+                        cajaFacil.setPosition(150, 240);
+
+                        sf::Text opcionFacil("Modo Aspiradora", menuFont, 15);
+                        opcionFacil.setFillColor(sf::Color::Black);
+                        opcionFacil.setPosition(162, 255);
+
+                        sf::RectangleShape cajaDificil(sf::Vector2f(400, 50));
+                        cajaDificil.setFillColor(sf::Color::Transparent);
+                        cajaDificil.setOutlineColor(sf::Color::Black);
+                        cajaDificil.setOutlineThickness(2);
+                        cajaDificil.setPosition(150, 340);
+
+                        sf::Text opcionDificil("Modo Ultron", menuFont, 15);
+                        opcionDificil.setFillColor(sf::Color::Black);
+                        opcionDificil.setPosition(210, 355);
+
+                        while (this->window->isOpen())
+                        {
+                            sf::Event subEvent;
+                            while (this->window->pollEvent(subEvent))
+                            {
+                                if (subEvent.type == sf::Event::Closed)
+                                    this->window->close();
+
+                                if (subEvent.type == sf::Event::MouseButtonPressed)
+                                {
+                                    if (subEvent.mouseButton.button == sf::Mouse::Left)
+                                    {
+                                        sf::Vector2i subMousePos = sf::Mouse::getPosition(*this->window);
+
+                                        if (cajaFacil.getGlobalBounds().contains(static_cast<sf::Vector2f>(subMousePos)))
+                                        {
+                                            this->dificultadIA = "Aspiradora";
+                                            return;
+                                        }
+                                        else if (cajaDificil.getGlobalBounds().contains(static_cast<sf::Vector2f>(subMousePos)))
+                                        {
+                                            this->dificultadIA = "Ultron";
+                                            return;
+                                        }
+                                    }
+                                }
+                            }
+
+                            sf::Vector2i mousePos = sf::Mouse::getPosition(*this->window);
+
+                            if (cajaFacil.getGlobalBounds().contains(static_cast<sf::Vector2f>(mousePos)))
+                            {
+                                opcionFacil.setFillColor(sf::Color::Red);
+                            }
+                            else
+                            {
+                                opcionFacil.setFillColor(sf::Color::Black);
+                            }
+
+                            if (cajaDificil.getGlobalBounds().contains(static_cast<sf::Vector2f>(mousePos)))
+                            {
+                                opcionDificil.setFillColor(sf::Color::Red);
+                            }
+                            else
+                            {
+                                opcionDificil.setFillColor(sf::Color::Black);
+                            }
+
+                            this->window->clear(sf::Color::White);
+                            this->window->draw(titulo);
+                            this->window->draw(cajaFacil);
+                            this->window->draw(opcionFacil);
+                            this->window->draw(cajaDificil);
+                            this->window->draw(opcionDificil);
+                            this->window->display();
+                        }
+                    }
                 }
             }
         }
 
-        window.clear(sf::Color::White);
-        window.draw(titulo);
-        window.draw(opcion1);
-        window.draw(opcion2);
-        window.display();
+        sf::Vector2i mousePos = sf::Mouse::getPosition(*this->window);
+
+        if (caja1.getGlobalBounds().contains(static_cast<sf::Vector2f>(mousePos)))
+        {
+            opcion1.setFillColor(sf::Color::Red);
+        }
+        else
+        {
+            opcion1.setFillColor(sf::Color(242, 240, 235));
+        }
+
+        if (caja2.getGlobalBounds().contains(static_cast<sf::Vector2f>(mousePos)))
+        {
+            opcion2.setFillColor(sf::Color::Red);
+        }
+        else
+        {
+            opcion2.setFillColor(sf::Color(242, 240, 235));
+        }
+
+        this->window->clear(sf::Color::White);
+        this->window->draw(titulo);
+        this->window->draw(caja1);
+        this->window->draw(opcion1);
+        this->window->draw(caja2);
+        this->window->draw(opcion2);
+        this->window->display();
     }
-    return -1;
 }

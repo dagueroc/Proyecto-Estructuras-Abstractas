@@ -52,6 +52,8 @@ class Cuatroenlinea {
         // Fuente y texto para mostrar el turno
         Font font;
         Text turnoTexto;
+        Text mensajeVictoria;
+
         void initTexto();
         void initSonido();
         SoundBuffer buffer;

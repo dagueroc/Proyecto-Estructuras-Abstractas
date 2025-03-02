@@ -100,7 +100,8 @@ void Cuatroenlinea::actualizarEventos()
                 {
                     if (this->colocarFicha(columna)) {
                         if (this->verificarVictoria(this->jugadorActual)) {
-                            cout << "¡El jugador " << this->jugadorActual << " ganó!" << endl;
+                            string nombreJugador = (this->jugadorActual == 'O') ? "Rojo" : "Amarillo";
+                            cout << "¡El jugador " << nombreJugador << " ganó!" << endl;
                             this->reiniciarJuego();
                         } else {
                             this->cambiarTurno();
@@ -192,7 +193,8 @@ void Cuatroenlinea::cambiarTurno()
 
 void Cuatroenlinea::mostrarTurno()
 {
-    this->turnoTexto.setString("Turno del jugador: " + string(1, this->jugadorActual));
+    string nombreJugador = (this->jugadorActual == 'O') ? "Rojo" : "Amarillo";
+    this->turnoTexto.setString("Turno del jugador: " + nombreJugador);
 }
 
 void Cuatroenlinea::reiniciarJuego()
@@ -201,10 +203,47 @@ void Cuatroenlinea::reiniciarJuego()
     this->mostrarTurno();
 }
 
-bool Cuatroenlinea::verificarVictoria(char jugador)
+bool Cuatroenlinea::verificarVictoria(char jugador) {
+    // Verificar filas
+    for (int i = 0; i < FILAS; i++) {
+        for (int j = 0; j < COLUMNAS - 3; j++) {
+            if (tablero[i][j] == jugador && tablero[i][j + 1] == jugador &&
+                tablero[i][j + 2] == jugador && tablero[i][j + 3] == jugador) {
+                return true;
+            }
+        }
+    }
 
-{
-    
+    // Verificar columnas
+    for (int j = 0; j < COLUMNAS; j++) {
+        for (int i = 0; i < FILAS - 3; i++) {
+            if (tablero[i][j] == jugador && tablero[i + 1][j] == jugador &&
+                tablero[i + 2][j] == jugador && tablero[i + 3][j] == jugador) {
+                return true;
+            }
+        }
+    }
+
+    // Verificar diagonales (de izquierda a derecha)
+    for (int i = 0; i < FILAS - 3; i++) {
+        for (int j = 0; j < COLUMNAS - 3; j++) {
+            if (tablero[i][j] == jugador && tablero[i + 1][j + 1] == jugador &&
+                tablero[i + 2][j + 2] == jugador && tablero[i + 3][j + 3] == jugador) {
+                return true;
+            }
+        }
+    }
+
+    // Verificar diagonales (de derecha a izquierda)
+    for (int i = 0; i < FILAS - 3; i++) {
+        for (int j = 3; j < COLUMNAS; j++) {
+            if (tablero[i][j] == jugador && tablero[i + 1][j - 1] == jugador &&
+                tablero[i + 2][j - 2] == jugador && tablero[i + 3][j - 3] == jugador) {
+                return true;
+            }
+        }
+    }
+
     return false;
 }
 
@@ -217,10 +256,12 @@ void Cuatroenlinea::jugarContraAspi()
 
     this->colocarFicha(columna);
     if (this->verificarVictoria(this->jugadorActual)) {
-        cout << "¡El jugador " << this->jugadorActual << " ganó!" << endl;
+        string nombreJugador = (this->jugadorActual == 'O') ? "Rojo" : "Amarillo";
+        cout << "¡El jugador " << nombreJugador << " ganó!" << endl;
         this->reiniciarJuego();
     } else {
         this->cambiarTurno();
+
     }
 }
 

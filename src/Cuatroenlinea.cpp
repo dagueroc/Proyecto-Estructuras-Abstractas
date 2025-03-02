@@ -267,7 +267,158 @@ void Cuatroenlinea::jugarContraAspi()
 
 void Cuatroenlinea::jugarContraUltron()
 {
-    // Implementacion
+    const int profundidad = 5;
+    int mejorColumna = -1;
+    int mejorValor = -10000;
+
+    // Función para evaluar el estado actual del tablero
+    auto evaluarBoard = [this]() -> int {
+        int score = 0;
+        // Ventaja por ocupar la columna central
+        int centerCol = COLUMNAS / 2;
+        int centerCount = 0;
+        for (int i = 0; i < FILAS; i++) {
+            if (this->tablero[i][centerCol] == 'X')
+                centerCount++;
+        }
+        score += centerCount * 3;
+
+        // Evaluación horizontal
+        for (int i = 0; i < FILAS; i++) {
+            for (int j = 0; j < COLUMNAS - 3; j++) {
+                int countX = 0, countO = 0, countEmpty = 0;
+                for (int k = 0; k < 4; k++) {
+                    char cell = this->tablero[i][j+k];
+                    if (cell == 'X') countX++;
+                    else if (cell == 'O') countO++;
+                    else countEmpty++;
+                }
+                if (countX == 4) return 1000; // Victoria inmediata
+                if (countO == 4) return -1000; // Derrota inmediata
+                if (countX == 3 && countEmpty == 1) score += 5;
+                else if (countX == 2 && countEmpty == 2) score += 2;
+                if (countO == 3 && countEmpty == 1) score -= 4;
+            }
+        }
+
+        // Evaluación vertical (mismo proceso que horizontal pero en columnas)
+        for (int j = 0; j < COLUMNAS; j++) {
+            for (int i = 0; i < FILAS - 3; i++) {
+                int countX = 0, countO = 0, countEmpty = 0;
+                for (int k = 0; k < 4; k++) {
+                    char cell = this->tablero[i+k][j];
+                    if (cell == 'X') countX++;
+                    else if (cell == 'O') countO++;
+                    else countEmpty++;
+                }
+                if (countX == 4) return 1000;
+                if (countO == 4) return -1000;
+                if (countX == 3 && countEmpty == 1) score += 5;
+                else if (countX == 2 && countEmpty == 2) score += 2;
+                if (countO == 3 && countEmpty == 1) score -= 4;
+            }
+        }
+
+        // Evaluaciones diagonales (positiva y negativa)
+        for (int i = 0; i < FILAS - 3; i++) {
+            for (int j = 0; j < COLUMNAS - 3; j++) {
+                int countX = 0, countO = 0, countEmpty = 0;
+                for (int k = 0; k < 4; k++) {
+                    char cell = this->tablero[i+k][j+k];
+                    if (cell == 'X') countX++;
+                    else if (cell == 'O') countO++;
+                    else countEmpty++;
+                }
+                if (countX == 4) return 1000;
+                if (countO == 4) return -1000;
+                if (countX == 3 && countEmpty == 1) score += 5;
+                else if (countX == 2 && countEmpty == 2) score += 2;
+                if (countO == 3 && countEmpty == 1) score -= 4;
+            }
+        }
+        return score;
+    };
+
+    // Implementación del algoritmo Minimax con poda alfa-beta
+    function<int(int, int, int, bool)> minimaxAI = [this, &evaluarBoard, &minimaxAI](int depth, int alpha, int beta, bool maximizing) -> int {
+        int score = evaluarBoard();
+        if (score == 1000 || score == -1000 || depth == 0)
+            return score;
+        
+        if (maximizing) { // Turno de Ultron (IA)
+            int maxEval = -10000;
+            for (int col = 0; col < COLUMNAS; col++) {
+                if (this->tablero[0][col] == ' ') {
+                    int filaDisponible = -1;
+                    for (int i = FILAS - 1; i >= 0; i--) {
+                        if (this->tablero[i][col] == ' ') {
+                            filaDisponible = i;
+                            break;
+                        }
+                    }
+                    if (filaDisponible == -1) continue;
+                    this->tablero[filaDisponible][col] = 'X';
+                    int eval = minimaxAI(depth - 1, alpha, beta, false);
+                    this->tablero[filaDisponible][col] = ' ';
+                    maxEval = max(maxEval, eval);
+                    alpha = max(alpha, eval);
+                    if (beta <= alpha) break; // Poda alfa-beta
+                }
+            }
+            return maxEval;
+        } else { // Turno del oponente
+            int minEval = 10000;
+            for (int col = 0; col < COLUMNAS; col++) {
+                if (this->tablero[0][col] == ' ') {
+                    int filaDisponible = -1;
+                    for (int i = FILAS - 1; i >= 0; i--) {
+                        if (this->tablero[i][col] == ' ') {
+                            filaDisponible = i;
+                            break;
+                        }
+                    }
+                    if (filaDisponible == -1) continue;
+                    this->tablero[filaDisponible][col] = 'O';
+                    int eval = minimaxAI(depth - 1, alpha, beta, true);
+                    this->tablero[filaDisponible][col] = ' ';
+                    minEval = min(minEval, eval);
+                    beta = min(beta, eval);
+                    if (beta <= alpha) break;
+                }
+            }
+            return minEval;
+        }
+    };
+
+    // Evaluación de la mejor jugada para Ultron
+    for (int col = 0; col < COLUMNAS; col++) {
+        if (this->tablero[0][col] == ' ') {
+            int filaDisponible = -1;
+            for (int i = FILAS - 1; i >= 0; i--) {
+                if (this->tablero[i][col] == ' ') {
+                    filaDisponible = i;
+                    break;
+                }
+            }
+            if (filaDisponible == -1) continue;
+            this->tablero[filaDisponible][col] = 'X';
+            int score = minimaxAI(profundidad - 1, -10000, 10000, false);
+            this->tablero[filaDisponible][col] = ' ';
+            if (score > mejorValor) {
+                mejorValor = score;
+                mejorColumna = col;
+            }
+        }
+    }
+    if (mejorColumna != -1) {
+        this->colocarFicha(mejorColumna);
+        if (this->verificarVictoria('X')) {
+            cout << "¡Ultron gana!" << endl;
+            this->reiniciarJuego();
+        } else {
+            this->cambiarTurno();
+        }
+    }
 }
 
 

@@ -4,7 +4,7 @@ LDFLAGS =
 
 # Configuración para Linux
 CXXFLAGS += -I/usr/include/SFML
-LDFLAGS += -lsfml-graphics -lsfml-window -lsfml-system
+LDFLAGS += -lsfml-graphics -lsfml-window -lsfml-system -lsfml-audio
 RM = rm -f
 EXE =
 RUN = ./build/main

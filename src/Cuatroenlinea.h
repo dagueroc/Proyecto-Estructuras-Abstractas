@@ -52,6 +52,12 @@ class Cuatroenlinea {
         Font font;
         Text turnoTexto;
         void initTexto();
+        void initSonido();
+        SoundBuffer buffer;
+        Sound sonidoBoton;
+        bool sonidoCaja1Reproducido = false;
+        bool sonidoCaja2Reproducido = false;
+        bool enMenu;
 };
 
 #endif // CUATROENLINEA_H

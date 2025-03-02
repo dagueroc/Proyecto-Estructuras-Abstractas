@@ -118,19 +118,19 @@ void Cuatroenlinea::actualizarEventos()
             break;
 
         case sf::Event::MouseMoved:
-            if (this->enMenu)  // Solo se reproduce el sonido si estamos en el menú
+            if (this->enMenu)  
             {
-                // Detección de si el mouse está sobre una columna
+
                 int columna = this->ev.mouseMove.x / 100;
                 if (columna >= 0 && columna < COLUMNAS) {
-                    // Si el mouse está sobre una columna y no se ha reproducido el sonido todavía
+
                     if (!sonidoBotonReproducido) {
                         sonidoBoton.play();
-                        sonidoBotonReproducido = true;  // Evita que se repita el sonido mientras el mouse se mueve
+                        sonidoBotonReproducido = true;  
                     }
                 }
                 else {
-                    sonidoBotonReproducido = false;  // Se restablece cuando el mouse no está sobre una columna
+                    sonidoBotonReproducido = false;  
                 }
             }
             break;
@@ -224,7 +224,10 @@ void Cuatroenlinea::jugarContraAspi()
     }
 }
 
-
+void Cuatroenlinea::jugarContraUltron()
+{
+    // Implementacion
+}
 
 
 void Cuatroenlinea::mostrarMenu()

@@ -30,7 +30,8 @@ class Cuatroenlinea {
         void reiniciarJuego();
         void mostrarTurno();
         void mostrarMenu();
-        void jugarContraAspi();  // Declaración de la función jugarContraAspi
+        void jugarContraAspi();  
+        void jugarContraUltron();  
 
     private:
         // Variables

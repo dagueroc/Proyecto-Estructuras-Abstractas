@@ -2,7 +2,6 @@
 #define CUATROENLINEA_H
 
 #include <SFML/Graphics.hpp>
-#include <SFML/Graphics.hpp>
 #include <SFML/System.hpp>
 #include <SFML/Audio.hpp>
 #include <SFML/Network.hpp>
@@ -31,6 +30,7 @@ class Cuatroenlinea {
         void reiniciarJuego();
         void mostrarTurno();
         void mostrarMenu();
+        void jugarContraAspi();  // Declaración de la función jugarContraAspi
 
     private:
         // Variables

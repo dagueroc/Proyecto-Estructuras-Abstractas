@@ -2,7 +2,8 @@
     "files.associations": {
         "iostream": "cpp",
         "optional": "cpp",
-        "ostream": "cpp"
+        "ostream": "cpp",
+        "*.tcc": "cpp"
     },
     "makefile.configureOnOpen": true
 }

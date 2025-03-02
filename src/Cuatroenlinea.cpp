@@ -70,6 +70,9 @@ Cuatroenlinea::Cuatroenlinea()
     this->initVariables();
     this->initTexto();
 
+    if (this->contraIA) {
+        srand(time(0));  // Inicializa la semilla para la IA
+    }
 }
 
 Cuatroenlinea::~Cuatroenlinea()
@@ -101,9 +104,15 @@ void Cuatroenlinea::actualizarEventos()
                             this->reiniciarJuego();
                         } else {
                             this->cambiarTurno();
+                            if (this->contraIA && this->jugadorActual == 'X') {
+                                if (this->dificultadIA == "Aspiradora") {
+                                    this->jugarContraAspi();
+                                } else if (this->dificultadIA == "Ultron") {
+                                    // this->jugarContraUltron();
+                                }
+                            }
                         }
                     }
-
                 }
             }
             break;
@@ -199,6 +208,21 @@ bool Cuatroenlinea::verificarVictoria(char jugador)
     return false;
 }
 
+void Cuatroenlinea::jugarContraAspi()
+{
+    int columna;
+    do {
+        columna = rand() % COLUMNAS;
+    } while (this->tablero[0][columna] != ' ');
+
+    this->colocarFicha(columna);
+    if (this->verificarVictoria(this->jugadorActual)) {
+        cout << "¡El jugador " << this->jugadorActual << " ganó!" << endl;
+        this->reiniciarJuego();
+    } else {
+        this->cambiarTurno();
+    }
+}
 
 
 

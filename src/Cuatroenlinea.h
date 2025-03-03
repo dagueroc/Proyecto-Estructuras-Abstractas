@@ -34,6 +34,9 @@ class Cuatroenlinea {
         void jugarContraUltron();
         void mostrarVentanaVictoria(const std::string &mensaje);  
         void parpadearFichasGanadoras(const vector<pair<int, int>>& fichasGanadoras);
+        void fadeOutMusica(Music& musica, float duracion);
+
+
     private:
         // Variables
         RenderWindow* window;
@@ -57,8 +60,20 @@ class Cuatroenlinea {
 
         void initTexto();
         void initSonido();
+
         SoundBuffer buffer;
         Sound sonidoBoton;
+
+        SoundBuffer bufferBip;
+        Sound sonidoBip;
+
+        SoundBuffer bufferInicio;
+        Sound sonidoInicio;
+
+        Music musicaFondo;
+        Music musicaDerrota;
+        Music musicaVictoria;
+
         bool sonidoCaja1Reproducido = false;
         bool sonidoCaja2Reproducido = false;
         bool enMenu;

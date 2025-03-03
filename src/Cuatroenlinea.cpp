@@ -50,11 +50,61 @@ void Cuatroenlinea::initSonido()
     }
 
     this->sonidoBoton.setBuffer(this->buffer);
-    sonidoBoton.setVolume(50);  
+    sonidoBoton.setVolume(75);
 
+    // Cargar la música de fondo
+    if (!this->musicaFondo.openFromFile("resources/menu.wav")) {
+        cerr << "Error al cargar la música de fondo" << endl;
+    } else {
+        cout << "Música de fondo cargada correctamente" << endl;
+    }
+    musicaFondo.setVolume(50);
+
+    if (!this->bufferBip.loadFromFile("resources/bip.wav")) {
+        cerr << "Error al cargar el sonido" << endl;
+    } else {
+        cout << "Sonido cargado correctamente" << endl;  
+    }
+    this->sonidoBip.setBuffer(this->bufferBip);
+    sonidoBip.setVolume(100);
+    
+    if (!this->bufferInicio.loadFromFile("resources/inicio.wav")) {
+        cerr << "Error al cargar el sonido" << endl;
+    } else {
+        cout << "Sonido cargado correctamente" << endl;  
+    }
+    this->sonidoInicio.setBuffer(this->bufferInicio);
+    sonidoInicio.setVolume(100);
+
+    if (!this->musicaDerrota.openFromFile("resources/derrota.wav")) {
+        cerr << "Error al cargar la música de derrota" << endl;
+    } else {
+        cout << "Música de derrota cargada correctamente" << endl;
+    }
+    musicaDerrota.setVolume(50);
+
+    if (!this->musicaVictoria.openFromFile("resources/victoria.wav")) {
+        cerr << "Error al cargar la música de victoria" << endl;
+    } else {
+        cout << "Música de victoria cargada correctamente" << endl;
+    }
+    musicaVictoria.setVolume(50);
+
+    
 }
 
+void Cuatroenlinea::fadeOutMusica(sf::Music& musica, float duration) {
+    float volume = musica.getVolume();
+    float decrement = volume / (duration * 1000 / 30); // Decremento por cada 10 ms
 
+    while (volume > 0) {
+        volume -= decrement;
+        if (volume < 0) volume = 0;
+        musica.setVolume(volume);
+        sf::sleep(sf::milliseconds(10));
+    }
+    musica.stop();
+}
 
 // Accesos
 const bool Cuatroenlinea::getWindowIsOpen() const
@@ -103,7 +153,10 @@ void Cuatroenlinea::actualizarEventos()
                         if (this->verificarVictoria(this->jugadorActual, fichasGanadoras)) {
                             this->parpadearFichasGanadoras(fichasGanadoras);
                             string nombreJugador = (this->jugadorActual == 'O') ? "Rojo" : "Amarillo";
-                            cout << "¡El jugador " << nombreJugador << " ganó!" << endl;
+                            cout << "¡El jugador " << nombreJugador << " es el ganador!" << endl;
+                            this->musicaVictoria.setLoop(true);
+                            this->musicaVictoria.play();
+                            this->mostrarVentanaVictoria("Victoria de  " + nombreJugador);
                             this->reiniciarJuego();
                         } else {
                             this->cambiarTurno();
@@ -128,7 +181,7 @@ void Cuatroenlinea::actualizarEventos()
                 if (columna >= 0 && columna < COLUMNAS) {
 
                     if (!sonidoBotonReproducido) {
-                        sonidoBoton.play();
+
                         sonidoBotonReproducido = true;  
                     }
                 }
@@ -183,7 +236,7 @@ bool Cuatroenlinea::colocarFicha(int columna)
         if (this->tablero[i][columna] == ' ') {
             this->tablero[i][columna] = this->jugadorActual;
             this->render(); 
-            sf::sleep(sf::seconds(1));
+            sf::sleep(sf::seconds(0.5));
             return true;
         }
     }
@@ -206,6 +259,8 @@ void Cuatroenlinea::reiniciarJuego()
 {
     this->initVariables();
     this->mostrarTurno();
+    musicaFondo.setVolume(50);
+    musicaFondo.play();
 }
 
 bool Cuatroenlinea::verificarVictoria(char jugador, vector<pair<int, int>>& fichasGanadoras) {
@@ -267,12 +322,21 @@ void Cuatroenlinea::jugarContraAspi()
     vector<pair<int, int>> fichasGanadoras;
     if (this->verificarVictoria(this->jugadorActual, fichasGanadoras)) {
         this->parpadearFichasGanadoras(fichasGanadoras);
-        string nombreJugador = (this->jugadorActual == 'O') ? "Rojo" : "Amarillo";
-        cout << "¡El jugador " << nombreJugador << " ganó!" << endl;
+        if (this->jugadorActual == 'X') {
+            cout << "¡Aspiradora es el ganador!" << endl;
+            this->mostrarVentanaVictoria("Victoria de Aspiradora");
+            this->musicaDerrota.setLoop(true);
+            this->musicaDerrota.play();
+        } else {
+            string nombreJugador = "Rojo";
+            cout << "¡El jugador " << nombreJugador << " es el ganador!" << endl;
+            this->musicaVictoria.setLoop(true);
+            this->musicaVictoria.play();
+            this->mostrarVentanaVictoria("Victoria de " + nombreJugador);
+        }
         this->reiniciarJuego();
     } else {
         this->cambiarTurno();
-
     }
 }
 
@@ -281,16 +345,16 @@ void Cuatroenlinea::mostrarVentanaVictoria(const std::string &mensaje) {
     sf::Text textVictory;
     textVictory.setFont(this->font);
     textVictory.setString(mensaje);
-    textVictory.setCharacterSize(30);
+    textVictory.setCharacterSize(20);
     textVictory.setFillColor(sf::Color::Black);
     sf::FloatRect textRect = textVictory.getLocalBounds();
     textVictory.setOrigin(textRect.left + textRect.width / 2.0f, textRect.top + textRect.height / 2.0f);
     textVictory.setPosition(this->window->getSize().x / 2.0f, 50);
     
     // Botón "Jugar de nuevo"
-    sf::RectangleShape buttonPlay(sf::Vector2f(200, 50));
+    sf::RectangleShape buttonPlay(sf::Vector2f(300, 50));
     buttonPlay.setFillColor(sf::Color::Green);
-    buttonPlay.setPosition(150, 120);
+    buttonPlay.setPosition(200, 240);
     sf::Text textPlay;
     textPlay.setFont(this->font);
     textPlay.setString("Jugar de nuevo");
@@ -302,9 +366,9 @@ void Cuatroenlinea::mostrarVentanaVictoria(const std::string &mensaje) {
                          buttonPlay.getPosition().y + buttonPlay.getSize().y / 2.0f);
     
     // Botón "Salir"
-    sf::RectangleShape buttonExit(sf::Vector2f(200, 50));
+    sf::RectangleShape buttonExit(sf::Vector2f(300, 50));
     buttonExit.setFillColor(sf::Color::Red);
-    buttonExit.setPosition(150, 190);
+    buttonExit.setPosition(200, 320);
     sf::Text textExit;
     textExit.setFont(this->font);
     textExit.setString("Salir");
@@ -348,6 +412,8 @@ void Cuatroenlinea::mostrarVentanaVictoria(const std::string &mensaje) {
     if (opcionSeleccionada == 1) {
         // Reiniciar el juego sin cerrar la ventana principal.
         this->reiniciarJuego();
+        musicaDerrota.stop();
+        musicaVictoria.stop();
     }
     else if (opcionSeleccionada == 2) {
         // Cerrar la ventana principal del juego.
@@ -509,6 +575,8 @@ void Cuatroenlinea::jugarContraUltron()
         if (this->verificarVictoria('X', fichasGanadoras)) {
             this->parpadearFichasGanadoras(fichasGanadoras);
             // Si Ultron gana, se muestra la ventana de victoria.
+            this->musicaDerrota.setLoop(true);
+            this->musicaDerrota.play();
             this->mostrarVentanaVictoria("Victoria de Ultron");
         }
         else {
@@ -518,6 +586,7 @@ void Cuatroenlinea::jugarContraUltron()
 }
 
 void Cuatroenlinea::parpadearFichasGanadoras(const vector<pair<int, int>>& fichasGanadoras) {
+    
     const int numParpadeos = 5;
     const sf::Time duracionParpadeo = sf::milliseconds(500);
 
@@ -535,12 +604,16 @@ void Cuatroenlinea::parpadearFichasGanadoras(const vector<pair<int, int>>& ficha
             this->window->draw(fichaShape);
         }
         this->window->display();
+        fadeOutMusica(this->musicaFondo, 2.0f);
+        this->sonidoBip.play(); // Reproducir sonido en cada parpadeo
         sf::sleep(duracionParpadeo);
     }
 }
 
 void Cuatroenlinea::mostrarMenu()
 {
+    this->musicaFondo.setLoop(true);
+    this->musicaFondo.play();
     sf::Font menuFont;
     if (!menuFont.loadFromFile("resources/font.ttf"))
     {
@@ -577,13 +650,14 @@ void Cuatroenlinea::mostrarMenu()
         sf::Event event;
         while (this->window->pollEvent(event))
         {
-            if (event.type == sf::Event::Closed)
+            if (event.type == sf::Event::Closed) {
+                fadeOutMusica(this->musicaFondo, 2.0f); // Fade out de 2 segundos
                 this->window->close();
+            }
 
             if (event.type == sf::Event::MouseMoved)
             {
                 sf::Vector2i mousePos = sf::Mouse::getPosition(*this->window);
-
 
                 if (caja_contra_jugador.getGlobalBounds().contains(static_cast<sf::Vector2f>(mousePos)))
                 {
@@ -597,7 +671,6 @@ void Cuatroenlinea::mostrarMenu()
                 {
                     sonidoCaja1Reproducido = false;
                 }
-
 
                 if (caja_contra_ia.getGlobalBounds().contains(static_cast<sf::Vector2f>(mousePos)))
                 {
@@ -621,6 +694,12 @@ void Cuatroenlinea::mostrarMenu()
 
                     if (caja_contra_jugador.getGlobalBounds().contains(static_cast<sf::Vector2f>(mousePos)))
                     {
+                        sonidoInicio.play();
+                        fadeOutMusica(this->musicaFondo, 2.0f); 
+                        sleep(seconds(1));
+                        this->musicaFondo.setLoop(true);
+                        musicaFondo.setVolume(75);
+                        musicaFondo.play();
                         this->contraIA = false;
                         return;
                     }
@@ -653,8 +732,10 @@ void Cuatroenlinea::mostrarMenu()
                             sf::Event subEvent;
                             while (this->window->pollEvent(subEvent))
                             {
-                                if (subEvent.type == sf::Event::Closed)
+                                if (subEvent.type == sf::Event::Closed) {
+                                    fadeOutMusica(this->musicaFondo, 2.0f); // Fade out de 2 segundos
                                     this->window->close();
+                                }
 
                                 if (subEvent.type == sf::Event::MouseMoved)
                                 {
@@ -695,11 +776,23 @@ void Cuatroenlinea::mostrarMenu()
 
                                         if (cajaFacil.getGlobalBounds().contains(static_cast<sf::Vector2f>(subMousePos)))
                                         {
+                                            sonidoInicio.play();
+                                            fadeOutMusica(this->musicaFondo, 1.5f); // Fade out de 2 segundos
+                                            sleep(sf::seconds(1));
                                             this->dificultadIA = "Aspiradora";
+                                            this->musicaFondo.setLoop(true);
+                                            musicaFondo.setVolume(50);
+                                            musicaFondo.play();
                                             return;
                                         }
                                         else if (cajaDificil.getGlobalBounds().contains(static_cast<sf::Vector2f>(subMousePos)))
                                         {
+                                            sonidoInicio.play();
+                                            fadeOutMusica(this->musicaFondo, 1.5f); // Fade out de 2 segundos
+                                            sleep(sf::seconds(1));
+                                            this->musicaFondo.setLoop(true);
+                                            musicaFondo.setVolume(50);
+                                            musicaFondo.play();
                                             this->dificultadIA = "Ultron";
                                             return;
                                         }
@@ -738,7 +831,6 @@ void Cuatroenlinea::mostrarMenu()
                 }
             }
         }
-     
 
         // Verifica si el mouse está sobre las cajas y cambia su color
         sf::Vector2i mousePos = sf::Mouse::getPosition(*this->window);

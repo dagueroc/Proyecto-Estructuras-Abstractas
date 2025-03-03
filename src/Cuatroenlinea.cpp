@@ -2,6 +2,7 @@
 #include <SFML/Graphics.hpp>
 #include <SFML/Audio.hpp>
 #include <iostream>
+#include <functional>
 
 using namespace std;
 
@@ -109,7 +110,7 @@ void Cuatroenlinea::actualizarEventos()
                                 if (this->dificultadIA == "Aspiradora") {
                                     this->jugarContraAspi();
                                 } else if (this->dificultadIA == "Ultron") {
-                                    // this->jugarContraUltron();
+                                    this->jugarContraUltron();
                                 }
                             }
                         }
@@ -265,6 +266,95 @@ void Cuatroenlinea::jugarContraAspi()
     }
 }
 
+void Cuatroenlinea::mostrarVentanaVictoria(const std::string &mensaje) {
+    // Crear la ventana de resultado
+    sf::RenderWindow victoryWindow(sf::VideoMode(500, 300), "Resultado", sf::Style::Titlebar | sf::Style::Close);
+    
+    // Cargar la fuente (asegúrate de tener "resources/font.ttf")
+    sf::Font font;
+    if (!font.loadFromFile("resources/font.ttf")) {
+        std::cerr << "Error al cargar la fuente" << std::endl;
+        return;
+    }
+    
+    // Configurar el mensaje de victoria
+    sf::Text textVictory;
+    textVictory.setFont(font);
+    textVictory.setString(mensaje);
+    textVictory.setCharacterSize(30);
+    textVictory.setFillColor(sf::Color::Black);
+    sf::FloatRect textRect = textVictory.getLocalBounds();
+    textVictory.setOrigin(textRect.left + textRect.width / 2.0f, textRect.top + textRect.height / 2.0f);
+    textVictory.setPosition(victoryWindow.getSize().x / 2.0f, 50);
+    
+    // Botón "Jugar de nuevo"
+    sf::RectangleShape buttonPlay(sf::Vector2f(200, 50));
+    buttonPlay.setFillColor(sf::Color::Green);
+    buttonPlay.setPosition(150, 120);
+    sf::Text textPlay;
+    textPlay.setFont(font);
+    textPlay.setString("Jugar de nuevo");
+    textPlay.setCharacterSize(20);
+    textPlay.setFillColor(sf::Color::Black);
+    sf::FloatRect playTextRect = textPlay.getLocalBounds();
+    textPlay.setOrigin(playTextRect.left + playTextRect.width / 2.0f, playTextRect.top + playTextRect.height / 2.0f);
+    textPlay.setPosition(buttonPlay.getPosition().x + buttonPlay.getSize().x / 2.0f,
+                         buttonPlay.getPosition().y + buttonPlay.getSize().y / 2.0f);
+    
+    // Botón "Salir"
+    sf::RectangleShape buttonExit(sf::Vector2f(200, 50));
+    buttonExit.setFillColor(sf::Color::Red);
+    buttonExit.setPosition(150, 190);
+    sf::Text textExit;
+    textExit.setFont(font);
+    textExit.setString("Salir");
+    textExit.setCharacterSize(20);
+    textExit.setFillColor(sf::Color::Black);
+    sf::FloatRect exitTextRect = textExit.getLocalBounds();
+    textExit.setOrigin(exitTextRect.left + exitTextRect.width / 2.0f, exitTextRect.top + exitTextRect.height / 2.0f);
+    textExit.setPosition(buttonExit.getPosition().x + buttonExit.getSize().x / 2.0f,
+                         buttonExit.getPosition().y + buttonExit.getSize().y / 2.0f);
+    
+    int opcionSeleccionada = 0; // 1: Jugar de nuevo, 2: Salir
+    
+    // Bucle de la ventana de victoria (este diálogo se ejecuta hasta que se elige una opción)
+    while (victoryWindow.isOpen() && opcionSeleccionada == 0) {
+        sf::Event event;
+        while (victoryWindow.pollEvent(event)) {
+            if (event.type == sf::Event::Closed) {
+                victoryWindow.close();
+            }
+            if (event.type == sf::Event::MouseButtonPressed && event.mouseButton.button == sf::Mouse::Left) {
+                sf::Vector2f mousePos(static_cast<float>(event.mouseButton.x), static_cast<float>(event.mouseButton.y));
+                if (buttonPlay.getGlobalBounds().contains(mousePos)) {
+                    opcionSeleccionada = 1;
+                }
+                else if (buttonExit.getGlobalBounds().contains(mousePos)) {
+                    opcionSeleccionada = 2;
+                }
+            }
+        }
+        
+        victoryWindow.clear(sf::Color::White);
+        victoryWindow.draw(textVictory);
+        victoryWindow.draw(buttonPlay);
+        victoryWindow.draw(textPlay);
+        victoryWindow.draw(buttonExit);
+        victoryWindow.draw(textExit);
+        victoryWindow.display();
+    }
+    
+    // Actuar según la opción seleccionada
+    if (opcionSeleccionada == 1) {
+        // Reiniciar el juego sin cerrar la ventana principal.
+        this->reiniciarJuego();
+    }
+    else if (opcionSeleccionada == 2) {
+        // Cerrar la ventana principal del juego.
+        this->window->close();
+    }
+}
+
 void Cuatroenlinea::jugarContraUltron()
 {
     const int profundidad = 5;
@@ -274,6 +364,7 @@ void Cuatroenlinea::jugarContraUltron()
     // Función lambda para evaluar el estado actual del tablero.
     auto evaluarBoard = [this]() -> int {
         int score = 0;
+        // Ventaja al ocupar la columna central.
         int centerCol = COLUMNAS / 2;
         int centerCount = 0;
         for (int i = 0; i < FILAS; i++) {
@@ -281,29 +372,31 @@ void Cuatroenlinea::jugarContraUltron()
                 centerCount++;
         }
         score += centerCount * 3;
+
         // Evaluación horizontal.
         for (int i = 0; i < FILAS; i++) {
             for (int j = 0; j < COLUMNAS - 3; j++) {
                 int countX = 0, countO = 0, countEmpty = 0;
                 for (int k = 0; k < 4; k++) {
-                    char cell = this->tablero[i][j+k];
+                    char cell = this->tablero[i][j + k];
                     if (cell == 'X') countX++;
                     else if (cell == 'O') countO++;
                     else countEmpty++;
                 }
-                if (countX == 4) return 1000;
-                if (countO == 4) return -1000;
+                if (countX == 4) return 1000; // Victoria inmediata.
+                if (countO == 4) return -1000; // Derrota inmediata.
                 if (countX == 3 && countEmpty == 1) score += 5;
                 else if (countX == 2 && countEmpty == 2) score += 2;
                 if (countO == 3 && countEmpty == 1) score -= 4;
             }
         }
+
         // Evaluación vertical.
         for (int j = 0; j < COLUMNAS; j++) {
             for (int i = 0; i < FILAS - 3; i++) {
                 int countX = 0, countO = 0, countEmpty = 0;
                 for (int k = 0; k < 4; k++) {
-                    char cell = this->tablero[i+k][j];
+                    char cell = this->tablero[i + k][j];
                     if (cell == 'X') countX++;
                     else if (cell == 'O') countO++;
                     else countEmpty++;
@@ -315,12 +408,13 @@ void Cuatroenlinea::jugarContraUltron()
                 if (countO == 3 && countEmpty == 1) score -= 4;
             }
         }
+
         // Evaluación diagonal (positiva).
         for (int i = 0; i < FILAS - 3; i++) {
             for (int j = 0; j < COLUMNAS - 3; j++) {
                 int countX = 0, countO = 0, countEmpty = 0;
                 for (int k = 0; k < 4; k++) {
-                    char cell = this->tablero[i+k][j+k];
+                    char cell = this->tablero[i + k][j + k];
                     if (cell == 'X') countX++;
                     else if (cell == 'O') countO++;
                     else countEmpty++;
@@ -342,7 +436,7 @@ void Cuatroenlinea::jugarContraUltron()
         if (score == 1000 || score == -1000 || depth == 0)
             return score;
         
-        if (maximizing) {
+        if (maximizing) { // Turno de Ultron (IA)
             int maxEval = -10000;
             for (int col = 0; col < COLUMNAS; col++) {
                 if (this->tablero[0][col] == ' ') {
@@ -359,11 +453,11 @@ void Cuatroenlinea::jugarContraUltron()
                     this->tablero[filaDisponible][col] = ' ';
                     maxEval = max(maxEval, eval);
                     alpha = max(alpha, eval);
-                    if (beta <= alpha) break;
+                    if (beta <= alpha) break; // Poda alfa-beta.
                 }
             }
             return maxEval;
-        } else {
+        } else { // Turno del oponente.
             int minEval = 10000;
             for (int col = 0; col < COLUMNAS; col++) {
                 if (this->tablero[0][col] == ' ') {
@@ -411,101 +505,15 @@ void Cuatroenlinea::jugarContraUltron()
     if (mejorColumna != -1) {
         this->colocarFicha(mejorColumna);
         if (this->verificarVictoria('X')) {
-            // Ocultamos la ventana principal para evitar conflictos.
-            this->window->setVisible(false);
-
-            // Se detecta victoria de Ultron: se muestra una ventana de resultado.
-            sf::RenderWindow victoryWindow(sf::VideoMode(500, 300), "Resultado");
-            std::string victoryMessage = "Victoria de Ultron";  // Puedes cambiar el mensaje para victoria del jugador.
-            
-            // Cargar la fuente (asegúrate de tener "resources/font.ttf")
-            sf::Font font;
-            if (!font.loadFromFile("resources/font.ttf")) {
-                std::cerr << "Error al cargar la fuente" << std::endl;
-                return;
-            }
-
-            // Configurar el texto de victoria.
-            sf::Text textVictory;
-            textVictory.setFont(font);
-            textVictory.setString(victoryMessage);
-            textVictory.setCharacterSize(30);
-            textVictory.setFillColor(sf::Color::Black);
-            sf::FloatRect textRect = textVictory.getLocalBounds();
-            textVictory.setOrigin(textRect.left + textRect.width / 2.0f, textRect.top + textRect.height / 2.0f);
-            textVictory.setPosition(250, 50);
-
-            // Botón "Jugar de nuevo".
-            sf::RectangleShape buttonPlay(sf::Vector2f(200, 50));
-            buttonPlay.setFillColor(sf::Color::Green);
-            buttonPlay.setPosition(150, 120);
-            sf::Text textPlay;
-            textPlay.setFont(font);
-            textPlay.setString("Jugar de nuevo");
-            textPlay.setCharacterSize(20);
-            textPlay.setFillColor(sf::Color::Black);
-            sf::FloatRect textPlayRect = textPlay.getLocalBounds();
-            textPlay.setOrigin(textPlayRect.left + textPlayRect.width / 2.0f, textPlayRect.top + textPlayRect.height / 2.0f);
-            textPlay.setPosition(buttonPlay.getPosition().x + buttonPlay.getSize().x / 2.0f,
-                                 buttonPlay.getPosition().y + buttonPlay.getSize().y / 2.0f);
-
-            // Botón "Salir".
-            sf::RectangleShape buttonExit(sf::Vector2f(200, 50));
-            buttonExit.setFillColor(sf::Color::Red);
-            buttonExit.setPosition(150, 190);
-            sf::Text textExit;
-            textExit.setFont(font);
-            textExit.setString("Salir");
-            textExit.setCharacterSize(20);
-            textExit.setFillColor(sf::Color::Black);
-            sf::FloatRect textExitRect = textExit.getLocalBounds();
-            textExit.setOrigin(textExitRect.left + textExitRect.width / 2.0f, textExitRect.top + textExitRect.height / 2.0f);
-            textExit.setPosition(buttonExit.getPosition().x + buttonExit.getSize().x / 2.0f,
-                                 buttonExit.getPosition().y + buttonExit.getSize().y / 2.0f);
-
-            bool opcionSeleccionada = false;
-            while (victoryWindow.isOpen() && !opcionSeleccionada) {
-                sf::Event event;
-                while (victoryWindow.pollEvent(event)) {
-                    if (event.type == sf::Event::Closed) {
-                        victoryWindow.close();
-                        opcionSeleccionada = true;
-                    }
-                    if (event.type == sf::Event::MouseButtonPressed &&
-                        event.mouseButton.button == sf::Mouse::Left) {
-                        sf::Vector2i mousePos = sf::Mouse::getPosition(victoryWindow);
-                        sf::Vector2f mousePosF(static_cast<float>(mousePos.x), static_cast<float>(mousePos.y));
-                        if (buttonPlay.getGlobalBounds().contains(mousePosF)) {
-                            std::cout << "Opción: Jugar de nuevo" << std::endl;
-                            victoryWindow.close();
-                            // Reiniciamos el juego y mostramos la ventana principal nuevamente.
-                            this->reiniciarJuego();
-                            this->window->setVisible(true);
-                            opcionSeleccionada = true;
-                        }
-                        else if (buttonExit.getGlobalBounds().contains(mousePosF)) {
-                            std::cout << "Opción: Salir" << std::endl;
-                            victoryWindow.close();
-                            // Finalizamos la aplicación.
-                            this->window->close();
-                            opcionSeleccionada = true;
-                        }
-                    }
-                }
-                victoryWindow.clear(sf::Color::White);
-                victoryWindow.draw(textVictory);
-                victoryWindow.draw(buttonPlay);
-                victoryWindow.draw(textPlay);
-                victoryWindow.draw(buttonExit);
-                victoryWindow.draw(textExit);
-                victoryWindow.display();
-            }
+            // Si Ultron gana, se muestra la ventana de victoria.
+            this->mostrarVentanaVictoria("Victoria de Ultron");
         }
         else {
             this->cambiarTurno();
         }
     }
 }
+
 
 
 void Cuatroenlinea::mostrarMenu()

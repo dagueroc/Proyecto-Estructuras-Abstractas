@@ -31,7 +31,8 @@ class Cuatroenlinea {
         void mostrarTurno();
         void mostrarMenu();
         void jugarContraAspi();  
-        void jugarContraUltron();  
+        void jugarContraUltron();
+        void mostrarVentanaVictoria(const std::string &mensaje);  
 
     private:
         // Variables

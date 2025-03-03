@@ -261,6 +261,8 @@ void Cuatroenlinea::reiniciarJuego()
     this->mostrarTurno();
     musicaFondo.setVolume(50);
     musicaFondo.play();
+    musicaDerrota.stop();
+    musicaVictoria.stop();
 }
 
 bool Cuatroenlinea::verificarVictoria(char jugador, vector<pair<int, int>>& fichasGanadoras) {
@@ -324,9 +326,9 @@ void Cuatroenlinea::jugarContraAspi()
         this->parpadearFichasGanadoras(fichasGanadoras);
         if (this->jugadorActual == 'X') {
             cout << "¡Aspiradora es el ganador!" << endl;
+            musicaDerrota.setLoop(true);
+            musicaDerrota.play();
             this->mostrarVentanaVictoria("Victoria de Aspiradora");
-            this->musicaDerrota.setLoop(true);
-            this->musicaDerrota.play();
         } else {
             string nombreJugador = "Rojo";
             cout << "¡El jugador " << nombreJugador << " es el ganador!" << endl;

@@ -50,7 +50,7 @@ void Cuatroenlinea::initSonido()
     }
 
     this->sonidoBoton.setBuffer(this->buffer);
-    sonidoBoton.setVolume(75);
+    sonidoBoton.setVolume(100);
 
     // Cargar la música de fondo
     if (!this->musicaFondo.openFromFile("resources/menu.wav")) {
@@ -353,13 +353,13 @@ void Cuatroenlinea::mostrarVentanaVictoria(const std::string &mensaje) {
     
     // Botón "Jugar de nuevo"
     sf::RectangleShape buttonPlay(sf::Vector2f(300, 50));
-    buttonPlay.setFillColor(sf::Color::Green);
+    buttonPlay.setFillColor(sf::Color(105, 97, 255));
     buttonPlay.setPosition(200, 240);
     sf::Text textPlay;
     textPlay.setFont(this->font);
     textPlay.setString("Jugar de nuevo");
     textPlay.setCharacterSize(20);
-    textPlay.setFillColor(sf::Color::Black);
+    textPlay.setFillColor(sf::Color(242, 240, 235));
     sf::FloatRect playTextRect = textPlay.getLocalBounds();
     textPlay.setOrigin(playTextRect.left + playTextRect.width / 2.0f, playTextRect.top + playTextRect.height / 2.0f);
     textPlay.setPosition(buttonPlay.getPosition().x + buttonPlay.getSize().x / 2.0f,
@@ -367,26 +367,51 @@ void Cuatroenlinea::mostrarVentanaVictoria(const std::string &mensaje) {
     
     // Botón "Salir"
     sf::RectangleShape buttonExit(sf::Vector2f(300, 50));
-    buttonExit.setFillColor(sf::Color::Red);
+    buttonExit.setFillColor(sf::Color(246, 168, 107));
     buttonExit.setPosition(200, 320);
     sf::Text textExit;
     textExit.setFont(this->font);
     textExit.setString("Salir");
     textExit.setCharacterSize(20);
-    textExit.setFillColor(sf::Color::Black);
+    textExit.setFillColor(sf::Color(242, 240, 235));
     sf::FloatRect exitTextRect = textExit.getLocalBounds();
     textExit.setOrigin(exitTextRect.left + exitTextRect.width / 2.0f, exitTextRect.top + exitTextRect.height / 2.0f);
     textExit.setPosition(buttonExit.getPosition().x + buttonExit.getSize().x / 2.0f,
                          buttonExit.getPosition().y + buttonExit.getSize().y / 2.0f);
     
     int opcionSeleccionada = 0; // 1: Jugar de nuevo, 2: Salir
-    
+    bool sonidoCaja1reproducido = false;
+    bool sonidoCaja2reproducido = false;
     // Bucle de la ventana de victoria (este diálogo se ejecuta hasta que se elige una opción)
     while (this->window->isOpen() && opcionSeleccionada == 0) {
         sf::Event event;
         while (this->window->pollEvent(event)) {
             if (event.type == sf::Event::Closed) {
                 this->window->close();
+            }
+            if (event.type == sf::Event::MouseMoved) {
+                sf::Vector2f mousePos(static_cast<float>(event.mouseMove.x), static_cast<float>(event.mouseMove.y));
+                if (buttonPlay.getGlobalBounds().contains(mousePos)) {
+                    if (!sonidoCaja1Reproducido) {
+                        sonidoBoton.play();
+                        sonidoCaja1Reproducido = true;
+                    }
+                    textPlay.setFillColor(sf::Color::Red);
+                } else {
+                    sonidoCaja1Reproducido = false;
+                    textPlay.setFillColor(sf::Color(242, 240, 235));
+                }
+                if (buttonExit.getGlobalBounds().contains(mousePos)) {
+                    if (!sonidoCaja2Reproducido)
+                    {
+                        sonidoBoton.play();
+                        sonidoCaja2Reproducido = true;
+                    }
+                    textExit.setFillColor(sf::Color::Red);
+                } else {
+                    sonidoCaja2Reproducido = false;
+                    textExit.setFillColor(sf::Color(242, 240, 235));
+                }
             }
             if (event.type == sf::Event::MouseButtonPressed && event.mouseButton.button == sf::Mouse::Left) {
                 sf::Vector2f mousePos(static_cast<float>(event.mouseButton.x), static_cast<float>(event.mouseButton.y));
@@ -698,7 +723,7 @@ void Cuatroenlinea::mostrarMenu()
                         fadeOutMusica(this->musicaFondo, 2.0f); 
                         sleep(seconds(1));
                         this->musicaFondo.setLoop(true);
-                        musicaFondo.setVolume(75);
+                        musicaFondo.setVolume(50);
                         musicaFondo.play();
                         this->contraIA = false;
                         return;

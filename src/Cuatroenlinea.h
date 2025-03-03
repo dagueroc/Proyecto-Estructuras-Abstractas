@@ -25,7 +25,7 @@ class Cuatroenlinea {
         void actualizar();
         void render();
         bool colocarFicha(int columna);
-        bool verificarVictoria(char jugador);
+        bool verificarVictoria(char jugador, vector<pair<int, int>>& fichasGanadoras);
         void cambiarTurno();
         void reiniciarJuego();
         void mostrarTurno();
@@ -33,7 +33,7 @@ class Cuatroenlinea {
         void jugarContraAspi();  
         void jugarContraUltron();
         void mostrarVentanaVictoria(const std::string &mensaje);  
-
+        void parpadearFichasGanadoras(const vector<pair<int, int>>& fichasGanadoras);
     private:
         // Variables
         RenderWindow* window;

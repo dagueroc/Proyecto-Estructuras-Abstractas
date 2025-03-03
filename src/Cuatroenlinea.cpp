@@ -93,14 +93,15 @@ void Cuatroenlinea::actualizarEventos()
             this->window->close();
             break;
 
-        case sf::Event::MouseButtonPressed:
-            if (this->ev.mouseButton.button == sf::Mouse::Left)
+        case sf::Event::MouseButtonPressed:            // Si Ultron gana::Mouse::Left)
             {
                 int columna = this->ev.mouseButton.x / 100; // Determina la columna de la celda
                 if (columna >= 0 && columna < COLUMNAS)
                 {
                     if (this->colocarFicha(columna)) {
-                        if (this->verificarVictoria(this->jugadorActual)) {
+                        vector<pair<int, int>> fichasGanadoras;
+                        if (this->verificarVictoria(this->jugadorActual, fichasGanadoras)) {
+                            this->parpadearFichasGanadoras(fichasGanadoras);
                             string nombreJugador = (this->jugadorActual == 'O') ? "Rojo" : "Amarillo";
                             cout << "¡El jugador " << nombreJugador << " ganó!" << endl;
                             this->reiniciarJuego();
@@ -178,8 +179,11 @@ void Cuatroenlinea::render()
 bool Cuatroenlinea::colocarFicha(int columna)
 {
     for (int i = FILAS - 1; i >= 0; i--) {
+        
         if (this->tablero[i][columna] == ' ') {
             this->tablero[i][columna] = this->jugadorActual;
+            this->render(); 
+            sf::sleep(sf::seconds(1));
             return true;
         }
     }
@@ -204,12 +208,13 @@ void Cuatroenlinea::reiniciarJuego()
     this->mostrarTurno();
 }
 
-bool Cuatroenlinea::verificarVictoria(char jugador) {
+bool Cuatroenlinea::verificarVictoria(char jugador, vector<pair<int, int>>& fichasGanadoras) {
     // Verificar filas
     for (int i = 0; i < FILAS; i++) {
         for (int j = 0; j < COLUMNAS - 3; j++) {
             if (tablero[i][j] == jugador && tablero[i][j + 1] == jugador &&
                 tablero[i][j + 2] == jugador && tablero[i][j + 3] == jugador) {
+                fichasGanadoras = {{i, j}, {i, j + 1}, {i, j + 2}, {i, j + 3}};
                 return true;
             }
         }
@@ -220,6 +225,7 @@ bool Cuatroenlinea::verificarVictoria(char jugador) {
         for (int i = 0; i < FILAS - 3; i++) {
             if (tablero[i][j] == jugador && tablero[i + 1][j] == jugador &&
                 tablero[i + 2][j] == jugador && tablero[i + 3][j] == jugador) {
+                fichasGanadoras = {{i, j}, {i + 1, j}, {i + 2, j}, {i + 3, j}};
                 return true;
             }
         }
@@ -230,6 +236,7 @@ bool Cuatroenlinea::verificarVictoria(char jugador) {
         for (int j = 0; j < COLUMNAS - 3; j++) {
             if (tablero[i][j] == jugador && tablero[i + 1][j + 1] == jugador &&
                 tablero[i + 2][j + 2] == jugador && tablero[i + 3][j + 3] == jugador) {
+                fichasGanadoras = {{i, j}, {i + 1, j + 1}, {i + 2, j + 2}, {i + 3, j + 3}};
                 return true;
             }
         }
@@ -240,6 +247,7 @@ bool Cuatroenlinea::verificarVictoria(char jugador) {
         for (int j = 3; j < COLUMNAS; j++) {
             if (tablero[i][j] == jugador && tablero[i + 1][j - 1] == jugador &&
                 tablero[i + 2][j - 2] == jugador && tablero[i + 3][j - 3] == jugador) {
+                fichasGanadoras = {{i, j}, {i + 1, j - 1}, {i + 2, j - 2}, {i + 3, j - 3}};
                 return true;
             }
         }
@@ -256,7 +264,9 @@ void Cuatroenlinea::jugarContraAspi()
     } while (this->tablero[0][columna] != ' ');
 
     this->colocarFicha(columna);
-    if (this->verificarVictoria(this->jugadorActual)) {
+    vector<pair<int, int>> fichasGanadoras;
+    if (this->verificarVictoria(this->jugadorActual, fichasGanadoras)) {
+        this->parpadearFichasGanadoras(fichasGanadoras);
         string nombreJugador = (this->jugadorActual == 'O') ? "Rojo" : "Amarillo";
         cout << "¡El jugador " << nombreJugador << " ganó!" << endl;
         this->reiniciarJuego();
@@ -267,32 +277,22 @@ void Cuatroenlinea::jugarContraAspi()
 }
 
 void Cuatroenlinea::mostrarVentanaVictoria(const std::string &mensaje) {
-    // Crear la ventana de resultado
-    sf::RenderWindow victoryWindow(sf::VideoMode(500, 300), "Resultado", sf::Style::Titlebar | sf::Style::Close);
-    
-    // Cargar la fuente (asegúrate de tener "resources/font.ttf")
-    sf::Font font;
-    if (!font.loadFromFile("resources/font.ttf")) {
-        std::cerr << "Error al cargar la fuente" << std::endl;
-        return;
-    }
-    
     // Configurar el mensaje de victoria
     sf::Text textVictory;
-    textVictory.setFont(font);
+    textVictory.setFont(this->font);
     textVictory.setString(mensaje);
     textVictory.setCharacterSize(30);
     textVictory.setFillColor(sf::Color::Black);
     sf::FloatRect textRect = textVictory.getLocalBounds();
     textVictory.setOrigin(textRect.left + textRect.width / 2.0f, textRect.top + textRect.height / 2.0f);
-    textVictory.setPosition(victoryWindow.getSize().x / 2.0f, 50);
+    textVictory.setPosition(this->window->getSize().x / 2.0f, 50);
     
     // Botón "Jugar de nuevo"
     sf::RectangleShape buttonPlay(sf::Vector2f(200, 50));
     buttonPlay.setFillColor(sf::Color::Green);
     buttonPlay.setPosition(150, 120);
     sf::Text textPlay;
-    textPlay.setFont(font);
+    textPlay.setFont(this->font);
     textPlay.setString("Jugar de nuevo");
     textPlay.setCharacterSize(20);
     textPlay.setFillColor(sf::Color::Black);
@@ -306,7 +306,7 @@ void Cuatroenlinea::mostrarVentanaVictoria(const std::string &mensaje) {
     buttonExit.setFillColor(sf::Color::Red);
     buttonExit.setPosition(150, 190);
     sf::Text textExit;
-    textExit.setFont(font);
+    textExit.setFont(this->font);
     textExit.setString("Salir");
     textExit.setCharacterSize(20);
     textExit.setFillColor(sf::Color::Black);
@@ -318,11 +318,11 @@ void Cuatroenlinea::mostrarVentanaVictoria(const std::string &mensaje) {
     int opcionSeleccionada = 0; // 1: Jugar de nuevo, 2: Salir
     
     // Bucle de la ventana de victoria (este diálogo se ejecuta hasta que se elige una opción)
-    while (victoryWindow.isOpen() && opcionSeleccionada == 0) {
+    while (this->window->isOpen() && opcionSeleccionada == 0) {
         sf::Event event;
-        while (victoryWindow.pollEvent(event)) {
+        while (this->window->pollEvent(event)) {
             if (event.type == sf::Event::Closed) {
-                victoryWindow.close();
+                this->window->close();
             }
             if (event.type == sf::Event::MouseButtonPressed && event.mouseButton.button == sf::Mouse::Left) {
                 sf::Vector2f mousePos(static_cast<float>(event.mouseButton.x), static_cast<float>(event.mouseButton.y));
@@ -335,13 +335,13 @@ void Cuatroenlinea::mostrarVentanaVictoria(const std::string &mensaje) {
             }
         }
         
-        victoryWindow.clear(sf::Color::White);
-        victoryWindow.draw(textVictory);
-        victoryWindow.draw(buttonPlay);
-        victoryWindow.draw(textPlay);
-        victoryWindow.draw(buttonExit);
-        victoryWindow.draw(textExit);
-        victoryWindow.display();
+        this->window->clear(sf::Color::White);
+        this->window->draw(textVictory);
+        this->window->draw(buttonPlay);
+        this->window->draw(textPlay);
+        this->window->draw(buttonExit);
+        this->window->draw(textExit);
+        this->window->display();
     }
     
     // Actuar según la opción seleccionada
@@ -504,7 +504,10 @@ void Cuatroenlinea::jugarContraUltron()
     
     if (mejorColumna != -1) {
         this->colocarFicha(mejorColumna);
-        if (this->verificarVictoria('X')) {
+        
+        vector<pair<int, int>> fichasGanadoras;
+        if (this->verificarVictoria('X', fichasGanadoras)) {
+            this->parpadearFichasGanadoras(fichasGanadoras);
             // Si Ultron gana, se muestra la ventana de victoria.
             this->mostrarVentanaVictoria("Victoria de Ultron");
         }
@@ -514,7 +517,27 @@ void Cuatroenlinea::jugarContraUltron()
     }
 }
 
+void Cuatroenlinea::parpadearFichasGanadoras(const vector<pair<int, int>>& fichasGanadoras) {
+    const int numParpadeos = 5;
+    const sf::Time duracionParpadeo = sf::milliseconds(500);
 
+    for (int i = 0; i < numParpadeos; ++i) {
+        for (const auto& ficha : fichasGanadoras) {
+            int fila = ficha.first;
+            int columna = ficha.second;
+
+            sf::CircleShape fichaShape(40.0f);
+            fichaShape.setPosition(10 + columna * (100.0f), (fila + 1) * (100.0f));
+            fichaShape.setOutlineThickness(1.75f);
+            fichaShape.setOutlineColor(sf::Color(96, 109, 166));
+            fichaShape.setFillColor((i % 2 == 0) ? sf::Color::White : (tablero[fila][columna] == 'O' ? sf::Color(255, 105, 97) : sf::Color(255, 253, 150)));
+
+            this->window->draw(fichaShape);
+        }
+        this->window->display();
+        sf::sleep(duracionParpadeo);
+    }
+}
 
 void Cuatroenlinea::mostrarMenu()
 {
